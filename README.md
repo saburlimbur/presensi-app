@@ -92,9 +92,6 @@ presensi-app/
 
 | Field | Informasi |
 | :---- | :-------- |
-| **Author** | Alif Dwi Rahman |
-| **Developer** | `saburlimburr_` |
-| **Jenis Proyek** | Skripsi S1 |
 | **Tujuan** | Sistem absensi menggunakan Face Recognition dan Geofencing |
 | **Teknologi** | Machine Learning (CNN), Geolocation, dan Biometric Verification |
 
