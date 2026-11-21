@@ -1,0 +1,365 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Department {
+  id   String @id @default(uuid()) @db.Char(36)
+  name String
+  code String @unique // e.g. "FIN", "HRD", "IT", "OPS"
+
+  headId String? @unique @db.Char(36)
+  head   User?   @relation("DepartmentHead", fields: [headId], references: [id])
+
+  employees User[] @relation("DepartmentEmployees")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model User {
+  id         String @id @default(uuid()) @db.Char(36)
+  email      String @unique
+  password   String
+  fullName   String
+  phone      String
+  employeeId String @unique
+
+  profilePhoto String?
+
+  departmentId String?     @db.Char(36)
+  department   Department? @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+
+  position Position
+  role     Role
+
+  joinDate DateTime? @db.Date
+  isActive Boolean   @default(true)
+
+  isFaceRegistered Boolean @default(false) // check 2 kali wajah user saat token refresh
+
+  faceEmbeddings FaceEmbedding[]
+  attendances    Attendance[]
+  permissions    Permission[]
+  leaveBalances  LeaveBalance[]
+
+  approvedPermissions Permission[] @relation("PermissionApprover")
+
+  ledDepartment Department? @relation("DepartmentHead")
+
+  refreshTokens UserRefreshToken[]
+
+  reports   Report[]
+  auditLogs AuditLog[]
+
+  notifications  Notification[]
+  passwordResets UserPasswordReset[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model FaceEmbedding {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String   @db.Char(36)
+  embedding Json
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("face_embeddings")
+}
+
+model Shift {
+  id          String    @id @default(uuid()) @db.Char(36)
+  name        ShiftName
+  startTime   DateTime  @db.Time(0)
+  endTime     DateTime  @db.Time(0)
+  gracePeriod Int
+  isActive    Boolean   @default(true)
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@map("shifts")
+}
+
+model AttendanceLocation {
+  id        String    @id @default(uuid()) @db.Char(36)
+  name      String
+  address   String?
+  latitude  Float
+  longitude Float
+  radius    Int
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  @@index([isActive])
+  @@map("attendance_locations")
+}
+
+model Attendance {
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @db.Char(36)
+
+  permissionId String? @db.Char(36)
+
+  date     DateTime  @db.Date
+  checkIn  DateTime?
+  checkOut DateTime?
+
+  status    AttendanceStatus
+  method    AttendanceMethod @default(MANUAL)
+  workMode  WorkMode         @default(WFO)
+  shiftName ShiftName?
+
+  note           String?
+  photoIn        String?
+  photoOut       String?
+  watermarkedIn  String?
+  watermarkedOut String?
+
+  latitudeIn   Float?
+  longitudeIn  Float?
+  latitudeOut  Float?
+  longitudeOut Float?
+
+  ipAddress       String?
+  deviceInfo      String?
+  isLocationValid Boolean?
+
+  gpsAccuracyIn  Float?
+  gpsAccuracyOut Float?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  permission Permission? @relation(fields: [permissionId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date], name: "unique_user_date_attendance")
+  @@index([date, status], name: "idx_date_status")
+  @@index([permissionId], name: "idx_permission")
+  @@map("attendances")
+}
+
+model Permission {
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @db.Char(36)
+
+  startDate     DateTime
+  endDate       DateTime
+  duration      Int
+  type          PermissionType
+  reason        String?
+  attachmentUrl String?
+
+  status PermissionStatus @default(PENDING)
+
+  approvedBy   String?   @db.Char(36)
+  approvedNote String?
+  approvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendances Attendance[]
+
+  user     User  @relation(fields: [userId], references: [id])
+  approver User? @relation("PermissionApprover", fields: [approvedBy], references: [id])
+
+  @@index([userId, status], name: "idx_user_permission_status")
+  @@index([userId, status, startDate], name: "idx_user_status_start")
+  @@map("permissions")
+}
+
+model LeaveBalance {
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @db.Char(36)
+  year   Int
+
+  annualQuota   Int @default(12)
+  usedDays      Int @default(0)
+  remainingDays Int @default(12)
+  carryOverDays Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, year])
+  @@map("leave_balances")
+}
+
+model Report {
+  id          String   @id @default(uuid()) @db.Char(36)
+  adminId     String   @db.Char(36)
+  title       String
+  description String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@map("reports")
+}
+
+model UserPasswordReset {
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @db.Char(36)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_password_resets")
+}
+
+model UserRefreshToken {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String   @db.Char(36)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_refresh_tokens")
+}
+
+model Notification {
+  id     String @id @default(uuid()) @db.Char(36)
+  userId String @db.Char(36)
+
+  type  NotificationType
+  title String
+  body  String
+
+  data Json?
+
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String?  @db.Char(36)
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum Position {
+  DIRECTOR
+  MANAGER
+  SUPERVISOR
+  TEAM_LEAD
+  SENIOR_STAFF
+  STAFF
+  JUNIOR_STAFF
+  HR_SPECIALIST
+  FINANCE_SPECIALIST
+  IT_SPECIALIST
+  MARKETING_SPECIALIST
+  INTERN
+  CONTRACT
+  OTHER
+}
+
+enum ShiftName {
+  MORNING
+  AFTERNOON
+  NIGHT
+  FULL_DAY
+  SPLIT_SHIFT
+  FLEXIBLE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  SICK
+  PERMIT
+  ON_LEAVE
+  HOLIDAY
+  WORK_FROM_HOME
+}
+
+enum AttendanceMethod {
+  QR_CODE
+  FACE_RECOGNITION
+  MANUAL
+  MOBILE_APP
+}
+
+enum WorkMode {
+  WFO
+  WFA
+}
+
+enum PermissionType {
+  SICK
+  PERMIT
+  ANNUAL_LEAVE
+  MATERNITY_LEAVE
+  PATERNITY_LEAVE
+  MARRIAGE_LEAVE
+  BEREAVEMENT
+  HALF_DAY
+  WORK_FROM_HOME
+  OTHER
+}
+
+enum PermissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationType {
+  ATTENDANCE_REMINDER
+  ATTENDANCE_CHECK_IN
+  ATTENDANCE_CHECK_OUT
+  PERMISSION_SUBMITTED
+  PERMISSION_APPROVED
+  PERMISSION_REJECTED
+  ANNOUNCEMENT
+  SYSTEM
+}
