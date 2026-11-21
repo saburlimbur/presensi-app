@@ -1,0 +1,299 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+@import "leaflet/dist/leaflet.css";
+
+/* Custom serif font */
+.font-serif {
+    font-family: "Crimson Pro", serif;
+}
+
+/* Scan animation */
+@keyframes scan {
+    0%,
+    100% {
+        top: 0%;
+        opacity: 0;
+    }
+
+    10%,
+    90% {
+        opacity: 1;
+    }
+
+    50% {
+        top: 100%;
+    }
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    /* ── Soft editorial — off-white paper, soft near-black ink,
+          one calm sage accent + muted semantic colors. ── */
+    --background: #FAFAF8; /* off-white paper */
+    --foreground: #1A1A1A; /* soft near-black ink */
+    --card: #FFFFFF; /* pure white surface */
+    --card-foreground: #1A1A1A;
+    --popover: #FFFFFF;
+    --popover-foreground: #1A1A1A;
+    --primary: #4F7A63; /* calm sage — the single brand accent */
+    --primary-foreground: #FFFFFF;
+    --secondary: #F0F0EE;
+    --secondary-foreground: #1A1A1A;
+    --muted: #F0F0EE;
+    --muted-foreground: #5C5F5B;
+    --accent: #F0F0EE; /* neutral hover */
+    --accent-foreground: #1A1A1A;
+    --destructive: #BC4A3C; /* comfortable brick red */
+    --border: #E6E6E3; /* hairline */
+    --input: #E6E6E3;
+    --ring: #4F7A63;
+    --chart-1: oklch(0.809 0.105 251.813);
+    --chart-2: oklch(0.623 0.214 259.815);
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
+    --radius: 0.375rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.809 0.105 251.813);
+    --chart-2: oklch(0.623 0.214 259.815);
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+    --font-sans: "Inter Variable", sans-serif;
+
+    /* ── Editorial design tokens ──
+       Use these directly: text-ink, text-ink-muted, bg-paper,
+       bg-paper-raised, border-line, bg-brand, bg-brand-soft. */
+    --color-brand: #4F7A63; /* calm sage — single brand accent */
+    --color-brand-bright: #3E6650; /* hover / pressed */
+    --color-brand-soft: #E9F0EC; /* tinted background */
+    --color-brand-foreground: #FFFFFF;
+    /* aksen cta — samain ke sage biar mono, ga keliatan oranye. pakai: bg-cta, text-cta, border-cta */
+    --color-cta: #4F7A63;
+    --color-cta-foreground: #FFFFFF;
+
+    /* skala sage dari brand (#4f7a63 = sage-500) buat depth —
+       yang terang buat background/tint, yang gelap buat hover.
+       contoh: bg-sage-50, text-sage-700, hover:bg-sage-600 */
+    --color-sage-50: #F2F6F3;
+    --color-sage-100: #E4EEE8;
+    --color-sage-200: #C6DBCF;
+    --color-sage-300: #A1C2AE;
+    --color-sage-400: #74A088;
+    --color-sage-500: #4F7A63;
+    --color-sage-600: #446A56;
+    --color-sage-700: #395848;
+    --color-sage-800: #2D4638;
+    --color-sage-900: #22352A;
+    --color-paper: #FAFAF8;
+    --color-paper-raised: #FFFFFF;
+    --color-ink: #1A1A1A; /* soft near-black, primary text */
+    --color-ink-muted: #5C5F5B; /* secondary text / labels */
+    --color-ink-faint: #9A9C98; /* hints / placeholders */
+    --color-line: #E6E6E3; /* hairline borders */
+    --color-line-strong: #D6D6D2; /* emphasized borders */
+
+    /* ── Semantic — muted, comfortable, harmonized with sage ──
+       Each has: base (icon/dot), -soft (tinted bg), -foreground (text on soft). */
+    --color-success: #3F7D5C;
+    --color-success-soft: #E6F1EB;
+    --color-success-foreground: #2E5E44;
+    --color-warning: #B07A1A;
+    --color-warning-soft: #FAF1DE;
+    --color-warning-foreground: #835A12;
+    --color-danger: #BC4A3C;
+    --color-danger-soft: #F8E9E6;
+    --color-danger-foreground: #9A3A2E;
+    --color-info: #3E6CA0;
+    --color-info-soft: #E9EFF6;
+    --color-info-foreground: #2F5580;
+
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        background-color: #FAFAF8;
+        color: #1A1A1A;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+    html {
+        @apply font-sans;
+    }
+
+    /* ── Editorial helpers ── */
+    /* Eyebrow: the small uppercase label above a section — used
+       deliberately, not everywhere, the Swiss way. */
+    .eyebrow {
+        font-size: 10px;
+        line-height: 1;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-ink-faint);
+    }
+    /* Display numerals: tight, confident, tabular. */
+    .display {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.04em;
+        font-feature-settings: "ss01", "cv01";
+    }
+    /* Full-bleed hairline rule. */
+    .rule {
+        height: 1px;
+        background-color: var(--color-line);
+    }
+
+    /* Hide scrollbar - cross browser */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none; /* IE & Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    /* Leaflet interactive map — supports pan + pinch-zoom */
+    .leaflet-static {
+        position: relative;
+        isolation: isolate; /* contain inner z-indexes to this stacking context */
+    }
+    .leaflet-static .leaflet-container {
+        cursor: grab;
+    }
+    .leaflet-static .leaflet-container:active,
+    .leaflet-static .leaflet-dragging .leaflet-container {
+        cursor: grabbing;
+    }
+    /* lower Leaflet internal z-indexes so modals/sheets (z-50+) sit on top */
+    .leaflet-static .leaflet-pane,
+    .leaflet-static .leaflet-top,
+    .leaflet-static .leaflet-bottom {
+        z-index: 1 !important;
+    }
+    .leaflet-static .leaflet-control {
+        z-index: 2 !important;
+    }
+    .leaflet-static .leaflet-control-attribution {
+        font-size: 9px;
+        background: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Custom zoom control styling */
+    .leaflet-static .leaflet-control-zoom {
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1) !important;
+        border-radius: 10px !important;
+        overflow: hidden;
+        margin: 8px !important;
+    }
+    .leaflet-static .leaflet-control-zoom a {
+        width: 30px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: #4F7A63 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgb(226 232 240) !important;
+    }
+    .leaflet-static .leaflet-control-zoom a:first-child {
+        border-bottom: none !important;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    .leaflet-static .leaflet-control-zoom a:last-child {
+        border-radius: 0 0 10px 10px !important;
+    }
+    .leaflet-static .leaflet-control-zoom a:hover {
+        background: rgb(248 250 252) !important;
+    }
+    .leaflet-static .leaflet-control-zoom a.leaflet-disabled {
+        color: rgb(148 163 184) !important;
+        background: rgb(248 250 252) !important;
+    }
+}
