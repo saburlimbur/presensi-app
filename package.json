@@ -1,0 +1,20 @@
+{
+  "name": "presensi-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sistem presensi karyawan berbasis face recognition dan geofencing",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev -w presensi-web",
+    "dev:api": "npm run dev -w presensi-api",
+    "build": "npm run build -w presensi-web",
+    "lint": "npm run lint -w presensi-web",
+    "test": "npm run test -w presensi-api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
