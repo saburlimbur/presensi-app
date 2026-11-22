@@ -1,8 +1,8 @@
 import { toLocalDateIso } from "@shared/utils/date";
 import AxiosApiService from "@shared/api/api-service";
+import { isAttendanceStatus } from "@features/attendance/utils/status";
 import type {
   AttendanceRecord,
-  AttendanceStatus,
   CheckInPayload,
   CheckOutPayload,
   HistoryResponse,
@@ -16,9 +16,6 @@ interface RawAttendance {
   date?: string;
   status?: string;
   workMode?: string;
-  workType?: string;
-  checkInTime?: string | null;
-  checkOutTime?: string | null;
   checkIn?: string | null;
   checkOut?: string | null;
   latitudeIn?: number | null;
@@ -27,11 +24,8 @@ interface RawAttendance {
   latitudeOut?: number | null;
   longitudeOut?: number | null;
   gpsAccuracyOut?: number | null;
-  deviceInfoIn?: string | null;
-  deviceInfoOut?: string | null;
   deviceInfo?: string | null;
-  noteIn?: string | null;
-  noteOut?: string | null;
+  note?: string | null;
   photoIn_url?: string | null;
   photoOut_url?: string | null;
   isLocationValid?: boolean | null;
@@ -52,9 +46,11 @@ interface RawAttendance {
 }
 
 const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
-  const checkInTime = raw.checkInTime ?? raw.checkIn ?? undefined;
-  const checkOutTime = raw.checkOutTime ?? raw.checkOut ?? undefined;
-  const statusLower = raw.status?.toLowerCase() as AttendanceStatus | undefined;
+  const checkInTime = raw.checkIn ?? undefined;
+  const checkOutTime = raw.checkOut ?? undefined;
+  const statusLower = raw.status?.toLowerCase();
+  const status =
+    statusLower && isAttendanceStatus(statusLower) ? statusLower : undefined;
 
   const user: UserInfo | undefined = raw.user
     ? {
@@ -78,8 +74,8 @@ const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
     date:
       raw.date ??
       toLocalDateIso(raw.createdAt ? new Date(raw.createdAt) : new Date()),
-    status: statusLower ?? (checkInTime ? "present" : "pending"),
-    workType: (raw.workType ?? raw.workMode) as WorkType | undefined,
+    status: status ?? (checkInTime ? "present" : "pending"),
+    workType: raw.workMode as WorkType | undefined,
     user,
     isLocationValid: raw.isLocationValid ?? null,
     checkIn: checkInTime
@@ -90,9 +86,9 @@ const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
           lng: raw.longitudeIn ?? null,
           locationId: "",
           locationName: raw.metadata?.checkInGeo?.locationName,
-          note: raw.noteIn ?? undefined,
+          note: raw.note ?? undefined,
           gpsAccuracy: raw.gpsAccuracyIn ?? undefined,
-          deviceInfo: raw.deviceInfoIn ?? raw.deviceInfo ?? undefined,
+          deviceInfo: raw.deviceInfo ?? undefined,
         }
       : undefined,
     checkOut: checkOutTime
@@ -103,16 +99,19 @@ const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
           lng: raw.longitudeOut ?? null,
           locationId: "",
           locationName: raw.metadata?.checkOutGeo?.locationName,
-          note: raw.noteOut ?? undefined,
+          note: undefined,
           gpsAccuracy: raw.gpsAccuracyOut ?? undefined,
-          deviceInfo: raw.deviceInfoOut ?? raw.deviceInfo ?? undefined,
+          deviceInfo: raw.deviceInfo ?? undefined,
         }
       : undefined,
   };
 };
 
+// `/attendance/today` membungkus record di `data.attendance`, sedangkan
+// check-in dan check-out mengembalikan record langsung di `data`.
 const extractAttendance = (
-  data: Record<string, unknown> | null | undefined,): RawAttendance | null => {
+  data: Record<string, unknown> | null | undefined,
+): RawAttendance | null => {
   if (!data) return null;
   const candidate = (data as { attendance?: RawAttendance }).attendance;
   if (candidate && typeof candidate === "object" && "id" in candidate) {

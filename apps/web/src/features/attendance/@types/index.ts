@@ -1,4 +1,13 @@
-export type AttendanceStatus = "present" | "late" | "absent" | "pending";
+export type AttendanceStatus =
+  | "present"
+  | "late"
+  | "absent"
+  | "sick"
+  | "permit"
+  | "on_leave"
+  | "holiday"
+  | "work_from_home"
+  | "pending";
 
 export type WorkType = "WFO" | "WFA";
 

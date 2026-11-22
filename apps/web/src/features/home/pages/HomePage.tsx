@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -10,13 +9,12 @@ import {
 } from "lucide-react";
 import { Button } from "@ui/button";
 import { useTodayResolved } from "@features/attendance/hooks/useTodayResolved";
+import { useTodayProgress } from "@features/attendance/hooks/useTodayProgress";
 import UnresolvedSessionNotice from "@features/attendance/components/UnresolvedSessionNotice";
 import { permissionLabel } from "@features/attendance/utils/permission";
 import {
   fmtTime,
   locationLabel,
-  minutesSince,
-  workMinutes,
 } from "@features/attendance/utils/format";
 import { useListNotification } from "@hooks/notifications/useListNotification";
 import { useUnreadCountNotification } from "@hooks/notifications/useUnreadCountNotification";
@@ -58,31 +56,17 @@ const HomePage = () => {
   const { unreadCount = 0 } = useUnreadCountNotification();
   const notifs = notificationList?.data ?? [];
 
-  const hasIn = !!today?.checkIn?.time;
-  const hasOut = !!today?.checkOut?.time;
-  const done = hasIn && hasOut;
+  const {
+    now,
+    hasCheckIn: hasIn,
+    hasCheckOut: hasOut,
+    done,
+    progressH,
+    progressM,
+    progressPct,
+    liveTime,
+  } = useTodayProgress(today, targetMinutes);
 
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const tickMs = hasIn && !hasOut ? 30_000 : 1_000;
-    const id = setInterval(() => setNow(new Date()), tickMs);
-    return () => clearInterval(id);
-  }, [hasIn, hasOut]);
-
-  const workingMins = hasOut
-    ? workMinutes(today!)
-    : hasIn
-      ? minutesSince(today!.checkIn!.time)
-      : 0;
-  const progressH = Math.floor(workingMins / 60);
-  const progressM = workingMins % 60;
-  const progressPct = Math.min(100, (workingMins / targetMinutes) * 100);
-
-  const liveTime = now.toLocaleTimeString("en-GB", {
-    timeZone: "Asia/Jakarta",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
   const todayDateLabel = now.toLocaleDateString("id-ID", {
     weekday: "long",
     day: "2-digit",

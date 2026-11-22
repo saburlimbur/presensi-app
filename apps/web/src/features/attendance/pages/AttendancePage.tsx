@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CalendarClock,
   CheckCircle2,
@@ -10,9 +10,11 @@ import {
 import { Button } from "@ui/button";
 import LocationMap from "@features/attendance/components/LocationMap";
 import AttendanceSheet from "@features/attendance/components/AttendanceSheet";
+import StatusBadge from "@features/attendance/components/StatusBadge";
 import AttendanceHistorySheet from "@features/attendance/components/AttendanceHistorySheet";
 import UnresolvedSessionNotice from "@features/attendance/components/UnresolvedSessionNotice";
 import { useTodayResolved } from "@features/attendance/hooks/useTodayResolved";
+import { useTodayProgress } from "@features/attendance/hooks/useTodayProgress";
 import { useGeolocation } from "@features/attendance/hooks/useGeolocation";
 import { findNearestLocation } from "@features/attendance/utils/geo";
 import { useReadLocation } from "@features/attendance/hooks/useReadLocation";
@@ -23,11 +25,9 @@ import {
 import {
   fmtTime,
   locationLabel,
-  minutesSince,
   startOfWeek,
-  workMinutes,
 } from "@features/attendance/utils/format";
-import type { AttendanceRecord, AttendanceStatus } from "@features/attendance/@types";
+import type { AttendanceRecord } from "@features/attendance/@types";
 
 type Filter = "week" | "month";
 
@@ -91,34 +91,20 @@ const AttendancePage = () => {
     [readLocation, coords],
   );
 
-  const hasCheckIn = !!today?.checkIn;
-  const hasCheckOut = !!today?.checkOut;
+  const {
+    now,
+    hasCheckIn,
+    hasCheckOut,
+    done,
+    progressH,
+    progressM,
+    progressPct,
+    liveTime,
+  } = useTodayProgress(today, targetMinutes);
   const ctaMode: "in" | "out" = hasCheckIn && !hasCheckOut ? "out" : "in";
-  const done = hasCheckIn && hasCheckOut;
 
   const isHalfDay = isHalfDayPermission(activePermission?.type);
 
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const tickMs = hasCheckIn ? 30_000 : 1_000;
-    const id = setInterval(() => setNow(new Date()), tickMs);
-    return () => clearInterval(id);
-  }, [hasCheckIn]);
-
-  const todayMins = hasCheckOut
-    ? workMinutes(today!)
-    : hasCheckIn
-      ? minutesSince(today!.checkIn!.time)
-      : 0;
-  const progressH = Math.floor(todayMins / 60);
-  const progressM = todayMins % 60;
-  const progressPct = Math.min(100, (todayMins / targetMinutes) * 100);
-
-  const liveTime = now.toLocaleTimeString("en-GB", {
-    timeZone: "Asia/Jakarta",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
   const dateLabel = now.toLocaleDateString("id-ID", {
     weekday: "long",
     day: "numeric",
@@ -201,7 +187,7 @@ const AttendancePage = () => {
               {dateLabel}
             </p>
           </div>
-          <StatusBadge state={done ? "done" : hasCheckIn ? "active" : "idle"} />
+          <SessionBadge state={done ? "done" : hasCheckIn ? "active" : "idle"} />
         </div>
 
         {unresolvedSession && (
@@ -374,7 +360,7 @@ const AttendancePage = () => {
   );
 };
 
-const StatusBadge = ({ state }: { state: "idle" | "active" | "done" }) => {
+const SessionBadge = ({ state }: { state: "idle" | "active" | "done" }) => {
   if (state === "active") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1">
@@ -445,7 +431,6 @@ const HistoryItem = ({
   const date = new Date(record.date);
   const dayNum = date.getDate();
   const monthShort = date.toLocaleDateString("id-ID", { month: "short" });
-  const status = statusFor(record.status);
   const photo = record.checkIn?.photoUrl;
   const locationName = locationLabel(record);
 
@@ -494,7 +479,7 @@ const HistoryItem = ({
           </div>
         )}
         <div className="flex flex-col items-end gap-1">
-          <span className={status.className}>{status.label}</span>
+          <StatusBadge status={record.status} size="sm" />
           <ChevronRight size={14} className="text-ink-faint" />
         </div>
       </div>
@@ -529,33 +514,6 @@ const SegmentedTabs = <T extends string>({
       ))}
     </div>
   );
-};
-
-const statusFor = (s: AttendanceStatus) => {
-  const base =
-    "inline-flex items-center h-5 px-1.5 rounded text-[10px] font-semibold";
-  switch (s) {
-    case "present":
-      return {
-        label: "Tepat waktu",
-        className: `${base} bg-brand-soft text-brand`,
-      };
-    case "late":
-      return {
-        label: "Telat",
-        className: `${base} bg-amber-50 text-amber-700`,
-      };
-    case "pending":
-      return {
-        label: "Pending",
-        className: `${base} bg-muted text-ink-muted`,
-      };
-    default:
-      return {
-        label: "Izin",
-        className: `${base} bg-muted text-ink-muted`,
-      };
-  }
 };
 
 export default AttendancePage;
