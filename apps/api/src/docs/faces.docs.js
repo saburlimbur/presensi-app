@@ -51,7 +51,7 @@ const facesDocs = {
       tags: ["Faces"],
       summary: "Verifikasi/pengenalan wajah",
       description:
-        "Cocokkan foto absensi dengan embedding wajah terdaftar. Menggunakan `multipart/form-data` dengan field `attendance_photo` (jpeg/png). Respons `data`: `{ userId, distance, confidence, verificationToken? }`. `verificationToken` hanya ada kalau wajah cocok dengan user yang login, berlaku 5 menit, dan dikirim sebagai `faceToken` ke check-in/check-out. Wajah tidak dikenali → 404.",
+        "Cocokkan foto absensi dengan embedding wajah terdaftar. Menggunakan `multipart/form-data` dengan field `attendance_photo` (jpeg/png). Respons `data`: `{ userId, distance, confidence, verificationToken? }`. `verificationToken` hanya ada kalau wajah cocok dengan user yang login, berlaku 5 menit untuk satu kali check-in atau check-out, dan dikirim sebagai `faceToken` ke check-in/check-out. Wajah tidak dikenali → 404.",
       requestBody: {
         required: true,
         content: {

@@ -14,22 +14,34 @@ import { AUDIT_ACTIONS } from "../audit_logs/audit_logs.model.js";
 import AppError, { sendError } from "../../utils/error.js";
 import tokens from "../../lib/tokens.js";
 
-const assertFaceVerified = (faceToken, userId) => {
-  if (!tokens.isValidFaceToken(faceToken, userId)) {
+// Face token hanya berlaku untuk satu aksi. Token ditandai terpakai sebelum
+// aksi dijalankan (supaya dua request bersamaan tidak lolos dua-duanya) dan
+// dilepas lagi kalau aksinya gagal.
+const withFaceVerification = async (faceToken, userId, action) => {
+  const tokenId = tokens.consumeFaceToken(faceToken, userId);
+  if (!tokenId) {
     throw new AppError(
-      "verifikasi wajah tidak valid atau sudah kedaluwarsa. ulangi verifikasi.",
+      "verifikasi wajah tidak valid, sudah dipakai, atau kedaluwarsa. ulangi verifikasi.",
       "FACE_VERIFICATION_REQUIRED",
       403,
     );
+  }
+
+  try {
+    return await action();
+  } catch (error) {
+    tokens.releaseFaceToken(tokenId);
+    throw error;
   }
 };
 
 const checkIn = async (req, res) => {
   try {
     const { faceToken, ...value } = validate(checkinModelSchema, req.body);
-    assertFaceVerified(faceToken, req.user.id);
 
-    const result = await attendanceService.checkIn(req.user.id, value, req.ip);
+    const result = await withFaceVerification(faceToken, req.user.id, () =>
+      attendanceService.checkIn(req.user.id, value, req.ip),
+    );
 
     return res.status(201).json({
       success: true,
@@ -44,9 +56,11 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const { faceToken, ...value } = validate(checkoutModelSchema, req.body);
-    assertFaceVerified(faceToken, req.user.id);
 
-    const result = await attendanceService.checkOut(req.user.id, value);
+    const result = await withFaceVerification(faceToken, req.user.id, () =>
+      attendanceService.checkOut(req.user.id, value),
+    );
+
     return res.status(200).json({
       success: true,
       message: "check-out berhasil.",

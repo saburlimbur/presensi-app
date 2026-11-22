@@ -24,4 +24,31 @@ describe("face token", () => {
     expect(tokens.isValidFaceToken("bukan-token", "u1")).toBe(false);
     expect(tokens.isValidFaceToken(undefined, "u1")).toBe(false);
   });
+
+  test("token sekali pakai: consume kedua ditolak", () => {
+    const token = tokens.generateFaceToken("u1");
+    expect(tokens.consumeFaceToken(token, "u1")).toEqual(expect.any(String));
+    expect(tokens.consumeFaceToken(token, "u1")).toBeNull();
+    expect(tokens.isValidFaceToken(token, "u1")).toBe(false);
+  });
+
+  test("consume oleh user lain ditolak dan tidak menghanguskan token", () => {
+    const token = tokens.generateFaceToken("u1");
+    expect(tokens.consumeFaceToken(token, "u2")).toBeNull();
+    expect(tokens.consumeFaceToken(token, "u1")).toEqual(expect.any(String));
+  });
+
+  test("release mengembalikan token supaya bisa dipakai lagi", () => {
+    const token = tokens.generateFaceToken("u1");
+    const tokenId = tokens.consumeFaceToken(token, "u1");
+    tokens.releaseFaceToken(tokenId);
+    expect(tokens.consumeFaceToken(token, "u1")).toBe(tokenId);
+  });
+
+  test("dua token untuk user yang sama saling independen", () => {
+    const first = tokens.generateFaceToken("u1");
+    const second = tokens.generateFaceToken("u1");
+    expect(tokens.consumeFaceToken(first, "u1")).not.toBeNull();
+    expect(tokens.consumeFaceToken(second, "u1")).not.toBeNull();
+  });
 });

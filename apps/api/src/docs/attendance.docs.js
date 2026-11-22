@@ -202,7 +202,7 @@ const attendanceDocs = {
       tags: ["Attendances"],
       summary: "Check-in absensi",
       description:
-        "Membuat sesi absensi baru untuk hari ini. Wajib menyertakan `faceToken`, yaitu `verificationToken` dari `POST /faces/recognize` (berlaku 5 menit). Untuk `WFO`, koordinat divalidasi terhadap radius lokasi kantor terdaftar. Tanpa token yang sah → 403 `FACE_VERIFICATION_REQUIRED`.",
+        "Membuat sesi absensi baru untuk hari ini. Wajib menyertakan `faceToken`, yaitu `verificationToken` dari `POST /faces/recognize` (berlaku 5 menit, sekali pakai). Untuk `WFO`, koordinat divalidasi terhadap radius lokasi kantor terdaftar. Tanpa token yang sah → 403 `FACE_VERIFICATION_REQUIRED`.",
       requestBody: {
         required: true,
         content: {
@@ -277,7 +277,7 @@ const attendanceDocs = {
       tags: ["Attendances"],
       summary: "Check-out absensi",
       description:
-        "Menutup sesi absensi terbuka terakhir. Wajib menyertakan `faceToken` dari `POST /faces/recognize`. Tanpa token yang sah → 403 `FACE_VERIFICATION_REQUIRED`.",
+        "Menutup sesi absensi terbuka terakhir. Wajib menyertakan `faceToken` dari `POST /faces/recognize` (sekali pakai). Tanpa token yang sah → 403 `FACE_VERIFICATION_REQUIRED`.",
       requestBody: {
         required: true,
         content: {
