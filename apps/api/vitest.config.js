@@ -6,6 +6,12 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["tests/**/*.test.js"],
+    // Nilai tetap supaya test tidak bergantung pada file .env di mesin
+    // masing-masing. Tanpa ini CORS_ORIGIN kosong berarti "*" dan test
+    // penolakan origin gagal di CI.
+    env: {
+      CORS_ORIGIN: "http://localhost:*",
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
