@@ -1,12 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@ui/button";
 
-const heroPhoto =
-  "https://images.unsplash.com/photo-1702677852173-85877e83c789?w=720&q=80&auto=format&fit=crop";
-const sidePhotoTop =
-  "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=480&q=80&auto=format&fit=crop";
-const sidePhotoBottom =
-  "https://images.unsplash.com/photo-1520547005736-ddc26a1f65ba?w=480&q=80&auto=format&fit=crop";
+// Foto dari Unsplash (lisensi Unsplash), disimpan lokal supaya ikut ter-cache PWA.
+const heroPhoto = "/splash/hero.jpg";
+const sidePhotoTop = "/splash/side-top.jpg";
+const sidePhotoBottom = "/splash/side-bottom.jpg";
 
 const SplashScreen = () => {
   const navigate = useNavigate();
