@@ -11,7 +11,7 @@ import type {
   WorkType,
 } from "@features/attendance/@types";
 
-interface RawAttendance {
+export interface RawAttendance {
   id: string;
   date?: string;
   status?: string;
@@ -45,7 +45,7 @@ interface RawAttendance {
   };
 }
 
-const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
+export const normalizeAttendance = (raw: RawAttendance): AttendanceRecord => {
   const checkInTime = raw.checkIn ?? undefined;
   const checkOutTime = raw.checkOut ?? undefined;
   const statusLower = raw.status?.toLowerCase();
