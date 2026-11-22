@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, FlipHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@ui/button";
 
 interface Props {
@@ -42,7 +43,7 @@ const FaceCamera = ({
       setStream(s);
       setActive(true);
     } catch {
-      alert("Izin kamera ditolak.");
+      toast.error("Kamera tidak bisa dibuka. Izinkan akses kamera di pengaturan browser.");
     } finally {
       setStarting(false);
     }
