@@ -3,6 +3,30 @@ import { toUtcDayStart, toUtcNextDayStart } from "../../utils/date.js";
 import { isUniqueViolation } from "../../utils/error.js";
 import { AlreadyCheckedInError } from "./errors/attendance.error.js";
 
+const DEPARTMENT_SELECT = { id: true, name: true, code: true };
+
+const LIST_USER_SELECT = {
+  id: true,
+  fullName: true,
+  email: true,
+  employeeId: true,
+  position: true,
+  department: { select: DEPARTMENT_SELECT },
+};
+
+const SESSION_USER_SELECT = { ...LIST_USER_SELECT, departmentId: true };
+
+const DETAIL_USER_SELECT = { ...LIST_USER_SELECT, phone: true, role: true };
+
+const PERMISSION_SELECT = {
+  id: true,
+  type: true,
+  reason: true,
+  status: true,
+  startDate: true,
+  endDate: true,
+};
+
 const create = async (data) => {
   try {
     return await prisma.attendance.create({ data });
@@ -34,33 +58,8 @@ const findByUserAndDate = async (userId, date) => {
       },
     },
     include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          employeeId: true,
-          position: true,
-          departmentId: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      },
-      permission: {
-        select: {
-          id: true,
-          type: true,
-          reason: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-        },
-      },
+      user: { select: SESSION_USER_SELECT },
+      permission: { select: PERMISSION_SELECT },
     },
   });
 };
@@ -144,22 +143,7 @@ const findManyAdmin = async (filters) => {
         },
       ],
       include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            employeeId: true,
-            position: true,
-            department: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-          },
-        },
+        user: { select: LIST_USER_SELECT },
       },
     }),
     prisma.attendance.count({
@@ -184,22 +168,7 @@ const findAllAdminForExport = async (filters) => {
       },
     ],
     include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          employeeId: true,
-          position: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      },
+      user: { select: LIST_USER_SELECT },
     },
   });
 };
@@ -210,24 +179,7 @@ const findByIdAdmin = async (id) => {
       id,
     },
     include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          employeeId: true,
-          phone: true,
-          position: true,
-          role: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      },
+      user: { select: DETAIL_USER_SELECT },
       permission: true,
     },
   });
@@ -285,33 +237,8 @@ const findLatestOpenSession = async (userId) => {
     },
     orderBy: { checkIn: "desc" },
     include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          employeeId: true,
-          position: true,
-          departmentId: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      },
-      permission: {
-        select: {
-          id: true,
-          type: true,
-          reason: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-        },
-      },
+      user: { select: SESSION_USER_SELECT },
+      permission: { select: PERMISSION_SELECT },
     },
   });
 };
@@ -331,16 +258,7 @@ const findOpenBeforeToday = async (userId) => {
     },
     orderBy: { checkIn: "desc" },
     include: {
-      permission: {
-        select: {
-          id: true,
-          type: true,
-          reason: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-        },
-      },
+      permission: { select: PERMISSION_SELECT },
     },
   });
 };
@@ -351,33 +269,8 @@ const findByIdWithRelations = async (id) => {
       id
     },
     include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          employeeId: true,
-          position: true,
-          departmentId: true,
-          department: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      },
-      permission: {
-        select: {
-          id: true,
-          type: true,
-          reason: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-        },
-      },
+      user: { select: SESSION_USER_SELECT },
+      permission: { select: PERMISSION_SELECT },
     },
   });
 };
@@ -445,16 +338,7 @@ const findMyHistory = async (userId, filters) => {
         },
       ],
       include: {
-        permission: {
-          select: {
-            id: true,
-            type: true,
-            reason: true,
-            status: true,
-            startDate: true,
-            endDate: true,
-          },
-        },
+        permission: { select: PERMISSION_SELECT },
       },
     }),
     prisma.attendance.count({
