@@ -35,7 +35,6 @@ services:
       - ./src:/app/src
       - ./prisma:/app/prisma
       - ./public:/app/public
-      - ./babel.config.json:/app/babel.config.json
       - ./jsconfig.json:/app/jsconfig.json
 
 volumes:

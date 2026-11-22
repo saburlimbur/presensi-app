@@ -4,17 +4,15 @@
   "description": "REST API absensi karyawan berbasis face recognition dan geofencing",
   "main": "src/server.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development TZ=Asia/Jakarta NODE_OPTIONS=--dns-result-order=ipv4first nodemon --exec babel-node src/server.js",
-    "build": "babel src -d dist",
+    "dev": "cross-env NODE_ENV=development TZ=Asia/Jakarta NODE_OPTIONS=--dns-result-order=ipv4first node --watch src/server.js",
     "start": "cross-env NODE_ENV=production TZ=Asia/Jakarta NODE_OPTIONS=--dns-result-order=ipv4first node src/server.js",
-    "clean": "rm -rf dist",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "cross-env NODE_ENV=development prisma migrate dev",
     "prisma:deploy": "cross-env NODE_ENV=development prisma migrate deploy",
     "prisma:studio": "cross-env NODE_ENV=development prisma studio",
     "postinstall": "prisma generate",
-    "prisma:seed": "cross-env NODE_ENV=development TZ=Asia/Jakarta babel-node prisma/seed.js",
-    "route:list": "babel-node scripts/route-list.js",
+    "prisma:seed": "cross-env NODE_ENV=development TZ=Asia/Jakarta node prisma/seed.js",
+    "route:list": "node scripts/route-list.js",
     "storage:purge": "cross-env NODE_ENV=development NODE_OPTIONS=--dns-result-order=ipv4first node scripts/purge-storage.js",
     "test": "cross-env TZ=Asia/Jakarta NODE_ENV=test vitest run",
     "test:watch": "cross-env TZ=Asia/Jakarta NODE_ENV=test vitest",
@@ -24,18 +22,17 @@
     "prisma:reset": "cross-env NODE_ENV=development prisma migrate reset",
     "prod:status": "cross-env NODE_ENV=production prisma migrate status",
     "prod:deploy": "cross-env NODE_ENV=production prisma migrate deploy",
-    "prod:seed": "cross-env NODE_ENV=production TZ=Asia/Jakarta babel-node prisma/seed.js",
+    "prod:seed": "cross-env NODE_ENV=production TZ=Asia/Jakarta node prisma/seed.js",
     "prod:studio": "cross-env NODE_ENV=production prisma studio"
   },
   "prisma": {
-    "seed": "cross-env TZ=Asia/Jakarta babel-node prisma/seed.js"
+    "seed": "cross-env TZ=Asia/Jakarta node prisma/seed.js"
   },
   "keywords": [],
   "author": "Alif Dwi Rahman",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@babel/runtime": "^7.28.6",
     "@napi-rs/canvas": "^0.1.96",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
@@ -54,7 +51,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "multer": "^2.1.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^10.6.1",
     "pg": "^8.20.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
@@ -62,18 +59,11 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.29.0",
-    "@babel/node": "^7.29.0",
-    "@babel/plugin-transform-runtime": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
     "@types/pg": "^8.18.0",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
-    "babel-plugin-module-resolver": "^5.0.2",
     "cross-env": "^10.1.0",
     "express-list-endpoints": "^7.1.1",
-    "nodemon": "^3.1.14",
     "prisma": "^7.5.0",
     "vitest": "^4.1.10"
   }

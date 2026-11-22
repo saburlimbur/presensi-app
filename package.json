@@ -12,9 +12,22 @@
     "dev:api": "npm run dev -w presensi-api",
     "build": "npm run build -w presensi-web",
     "lint": "npm run lint -w presensi-web",
-    "test": "npm run test -w presensi-api"
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "npm run test -w presensi-api",
+    "test:web": "npm run test -w presensi-web"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
+  },
+  "overrides": {
+    "effect": "^3.22.5",
+    "glob@^11": "^14.0.6",
+    "minimatch@^10": "^11.0.9",
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "face-api.js": {
+      "node-fetch": "^2.7.0"
+    }
   }
 }
