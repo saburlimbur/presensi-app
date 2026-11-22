@@ -29,13 +29,13 @@ Authorization: Bearer <accessToken>
   "success": true,
   "message": "deskripsi singkat",
   "data": { },
-  "pagination": { "total": 0, "page": 1, "limit": 10, "totalPage": 1 }
+  "pagination": { "total": 0, "page": 1, "limit": 10, "totalPages": 1,
+                  "hasNextPage": false, "hasPreviousPage": false }
 }
 ```
 `data` bisa objek atau array. `pagination` hanya muncul di endpoint list.
 
-> Catatan: key pagination tidak 100% seragam antar module — sebagian pakai `totalPage`,
-> sebagian `totalPages`. Lihat tiap endpoint.
+Semua endpoint list memakai bentuk `pagination` yang sama. `limit` maksimal 100.
 
 ### Bentuk Response Error
 ```json
@@ -191,7 +191,7 @@ deteksi masuk `errors`.
 
 **POST `/faces/recognize`** — form field `attendance_photo` (1 file image).
 Berhasil → `data: { userId, distance, confidence, verificationToken? }`. Tidak dikenali → **404**.
-`verificationToken` hanya ada kalau wajah cocok dengan user yang login; berlaku 5 menit.
+`verificationToken` hanya ada kalau wajah cocok dengan user yang login; berlaku 5 menit dan hanya untuk satu kali check-in atau check-out.
 > Alur FE: panggil `recognize` dulu, lalu kirim `verificationToken` sebagai `faceToken` ke `check-in` / `check-out`.
 
 ---
@@ -227,7 +227,7 @@ Berhasil → `data: { userId, distance, confidence, verificationToken? }`. Tidak
   "faceToken": "<verificationToken>"
 }
 ```
-- `faceToken` tidak ada, kedaluwarsa, atau milik user lain → 403 `FACE_VERIFICATION_REQUIRED`.
+- `faceToken` tidak ada, kedaluwarsa, sudah pernah dipakai, atau milik user lain → 403 `FACE_VERIFICATION_REQUIRED`.
 - `WFO` → divalidasi terhadap radius lokasi kantor; di luar radius → 400 (pesan menyertakan jarak terdekat).
 - Sudah check-in → 409. Sedang cuti yang di-approve → 409.
 - WFH approved → otomatis dipaksa `WFA` (skip cek lokasi).
@@ -236,7 +236,7 @@ Berhasil → `data: { userId, distance, confidence, verificationToken? }`. Tidak
 Belum check-in → 404. Sudah check-out → 409. Mendukung checkout lewat tengah malam.
 Sesi terbuka lebih tua dari `MAX_OPEN_SESSION_HOURS` → 409 `CHECKOUT_WINDOW_EXPIRED` (butuh koreksi admin).
 
-**GET `/attendance/my/history`** — query: `dateFrom, dateTo, status, workMode, page, limit` (`totalPages`).
+**GET `/attendance/my/history`** — query: `dateFrom, dateTo, status, workMode, page, limit`.
 **GET `/attendance/list-user-attendances`** — query: `date | (dateFrom,dateTo), userId, departmentId, status, workMode, shiftName, page, limit`.
 **GET `/attendance/.../export`** — query sama (tanpa page/limit), respons **file .xlsx** (`Content-Disposition`). **Wajib** `date`, atau `dateFrom` bersama `dateTo`; tanpa itu → 400. Rentang max 92 hari.
 **GET `/attendance/user-summary-attendances`** — query `date?` → hitungan per status & workMode.
@@ -279,7 +279,7 @@ MARRIAGE_LEAVE, BEREAVEMENT` → saldo kurang saat submit → 409. Durasi dihitu
 (`INSUFFICIENT_LEAVE_BALANCE`). Sudah diproses admin lain → 409.
 **PATCH `/permissions/:id/reject`** — `{ note }` (**wajib**).
 **PATCH `/permissions/:id/cancel`** — hanya izin sendiri & status `PENDING`.
-**GET `/permissions`** — query: `page, limit (maks 100), search, type, status` (`totalPage`). `type`/`status` di luar enum → 400.
+**GET `/permissions`** — query: `page, limit (maks 100), search, type, status`. `type`/`status` di luar enum → 400.
 
 ---
 
@@ -297,7 +297,7 @@ MARRIAGE_LEAVE, BEREAVEMENT` → saldo kurang saat submit → 409. Durasi dihitu
 `data`: `{ year, annualQuota, usedDays, remainingDays, carryOverDays, ... }`. Auto-init kalau belum ada.
 **POST `/leave-balances`** — `{ userId, year, annualQuota, carryOverDays }`.
 **PATCH `/leave-balances/:id`** — `{ annualQuota?, carryOverDays? }` (`remainingDays` dihitung server).
-**GET `/leave-balances`** — query: `page, limit, search, userId, year` (`totalPage`).
+**GET `/leave-balances`** — query: `page, limit, search, userId, year`.
 
 ---
 
@@ -311,7 +311,7 @@ MARRIAGE_LEAVE, BEREAVEMENT` → saldo kurang saat submit → 409. Durasi dihitu
 | PATCH | `/notifications/read-all` | USER | Tandai semua dibaca |
 | GET | `/events/stream` | USER | SSE realtime (lihat bagian Realtime) |
 
-**GET `/notifications`** — query: `page, limit, unreadOnly (bool), type` (`totalPage`).
+**GET `/notifications`** — query: `page, limit, unreadOnly (bool), type`.
 `type` ∈ `ATTENDANCE_REMINDER, ATTENDANCE_CHECK_IN, ATTENDANCE_CHECK_OUT,
 PERMISSION_SUBMITTED, PERMISSION_APPROVED, PERMISSION_REJECTED, ANNOUNCEMENT, SYSTEM`.
 > Notifikasi dibuat otomatis oleh sistem — tidak ada endpoint "create".
@@ -410,6 +410,6 @@ Mencatat aksi sensitif admin (create user, toggle active, approve/reject/cancel 
 
 ## Catatan Kompatibilitas FE
 - **Foto/dokumen** disajikan via Supabase Storage. Selalu pakai field `*_url`, jangan susun URL sendiri.
-- **Pagination** mayoritas `totalPage`; `attendances` pakai `totalPages` (lihat masing-masing).
+- **Pagination** seragam di semua module: `{ total, page, limit, totalPages, hasNextPage, hasPreviousPage }`.
 - **Tidak ada hard-delete user** — pakai `PATCH /users/:id/toggle-active`.
 - **Timezone**: semua perhitungan hari/jam berbasis Asia/Jakarta. Kirim tanggal sebagai ISO.

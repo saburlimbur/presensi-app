@@ -47,7 +47,7 @@ Api jalan di `http://localhost:3000`, web di `http://localhost:5174`.
 | `npm run dev:web` | Web saja |
 | `npm run build` | Typecheck dan build web |
 | `npm run lint` | ESLint web |
-| `npm run test` | Test api |
+| `npm run test` | Test api dan web (`test:api`, `test:web` untuk salah satu) |
 
 ## Struktur
 
@@ -72,7 +72,7 @@ presensi-app/
 
 ## Alur Absensi
 
-1. Web mengirim selfie ke `POST /faces/recognize`. Kalau wajah cocok dengan user yang login, server mengembalikan `verificationToken` yang berlaku 5 menit.
+1. Web mengirim selfie ke `POST /faces/recognize`. Kalau wajah cocok dengan user yang login, server mengembalikan `verificationToken` yang berlaku 5 menit dan hanya bisa dipakai sekali.
 2. Web membaca lokasi perangkat dan membandingkannya dengan radius kantor terdekat.
 3. Web memanggil `POST /attendance/check-in` (atau `check-out`) dengan koordinat dan token tadi sebagai `faceToken`. Server menolak permintaan tanpa token yang sah.
 
@@ -103,7 +103,6 @@ presensi-app/
 | :-- | :-- | :-- |
 | Runtime | `Node.js 20 (ES Modules)` | Docker image `node:20-slim`; proyek memakai `"type": "module"`. |
 | Framework | `Express.js 5.x` | Web framework minimalis untuk RESTful API. |
-| Transpiler | `Babel 7.x` | Transpile ES2022+ via `@babel/preset-env`; dev pakai `babel-node` + nodemon. |
 | Database | `PostgreSQL 16` | Lokal saat dev, Supabase saat production. |
 | ORM | `Prisma 7` + `@prisma/adapter-pg` | Schema-first, migrasi, query type-safe. |
 | Object Storage | `Supabase Storage` | Foto wajah, foto profil, lampiran izin — lihat [Penyimpanan Berkas](#penyimpanan-berkas). |
@@ -123,7 +122,7 @@ presensi-app/
 | Realtime | SSE (Server-Sent Events) | Broadcast notifikasi via `EventSource`. |
 | Email | `nodemailer` (SMTP) | Reset password. |
 | Testing | `Vitest 4` | 151 unit test, Prisma di-mock — tidak butuh database. |
-| Dev Tools | `nodemon`, `express-list-endpoints` | Hot-reload + `npm run route:list`. |
+| Dev Tools | `node --watch`, `express-list-endpoints` | Hot-reload + `npm run route:list`. |
 
 ---
 

@@ -66,7 +66,7 @@ Jalankan: `npm run dev` → server siap di `http://localhost:3000`.
 
 ### Hot reload
 
-`npm run dev` pakai nodemon — edit file di `src/` → auto-restart. Yang perlu `npm install` ulang cuma
+`npm run dev` pakai `node --watch` — edit file di `src/` → auto-restart. Yang perlu `npm install` ulang cuma
 kalau `package.json` berubah.
 
 ### Prisma — edit schema DB
@@ -544,7 +544,7 @@ apps/api/
 ├── public/
 │   ├── models/            # Face-api weights (tiny_face, landmark, recognition)
 │   └── images/            # (runtime) upload foto wajah & attendance
-├── Dockerfile             # Stage dev: deps + nodemon
+├── Dockerfile             # Stage dev: deps + node --watch
 ├── docker-compose.yml     # Postgres + app (hot-reload via bind-mount)
 ├── .env                   # Konfigurasi local (jangan commit)
 ├── .env.example           # Template env
